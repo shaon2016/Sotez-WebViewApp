@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "589853097756",
+    "firebase_url": "https://app-sotez.firebaseio.com",
+    "project_id": "app-sotez",
+    "storage_bucket": "app-sotez.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589853097756:android:521c2d6cfd75359a3284d9",
+        "android_client_info": {
+          "package_name": "net.sotez.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "589853097756-pqbtgvccdjbsavfn84ige3av1vg77mpj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmwij7sPU0Im5CHrwlTr-pvlXZYZPjiuI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "589853097756-pqbtgvccdjbsavfn84ige3av1vg77mpj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
