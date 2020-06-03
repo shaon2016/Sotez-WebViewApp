@@ -1,21 +1,30 @@
 package net.sotez.app
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.view.KeyEvent
 import android.view.View
+import android.webkit.DownloadListener
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
+
+class MainActivity : AppCompatActivity() {
+    val REQUEST_SELECT_FILE = 100
+    var uploadMessage: ValueCallback<Array<Uri>>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        swiperefresh.setOnRefreshListener(this)
 
         if (Util.isNetConnected(this)) {
 
@@ -25,11 +34,20 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
 
             webview.webViewClient = MyWebViewClient()
 
+            webview.webChromeClient = MyWebChromeClient()
+
+            webview.setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
+                val i = Intent(Intent.ACTION_VIEW)
+                i.data = Uri.parse(url)
+                startActivity(i)
+            }
+
             floating.setOnClickListener {
                 startActivity(Intent(this, NotificationActivity::class.java))
             }
 
             showProgressBar()
+
 
 
         } else {
@@ -39,12 +57,12 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
             pb.visibility = View.GONE
         }
 
+
     }
 
     private fun showProgressBar() {
         Handler().postDelayed({
             pb.visibility = View.GONE
-            swiperefresh.isRefreshing = false
         }, 5000)
     }
 
@@ -59,8 +77,41 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
         return super.onKeyDown(keyCode, event)
     }
 
-    override fun onRefresh() {
-        webview.reload()
-        showProgressBar()
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+        if (requestCode == REQUEST_SELECT_FILE) {
+            if (uploadMessage == null) return;
+            uploadMessage?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+            uploadMessage = null;
+        }
+
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    inner class MyWebChromeClient : WebChromeClient() {
+
+        override fun onShowFileChooser(
+            webView: WebView,
+            filePathCallback: ValueCallback<Array<Uri>>,
+            fileChooserParams: FileChooserParams
+        ): Boolean {
+            // make sure there is no existing message
+            if (uploadMessage != null) {
+                uploadMessage?.onReceiveValue(null)
+                uploadMessage = null
+            }
+            uploadMessage = filePathCallback
+            val intent = fileChooserParams.createIntent()
+            try {
+                startActivityForResult(intent, REQUEST_SELECT_FILE)
+            } catch (e: ActivityNotFoundException) {
+                uploadMessage = null
+                Toast.makeText(this@MainActivity, "Cannot open file chooser", Toast.LENGTH_LONG).show()
+                return false
+            }
+            return true
+        }
     }
 }
+
+
