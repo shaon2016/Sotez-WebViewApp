@@ -54,14 +54,12 @@ class MainActivity : AppCompatActivity(), PageLoader {
             floating.visibility = View.GONE
             pb.visibility = View.GONE
         }
-
-
     }
 
     private fun showProgressBar() {
         Handler().postDelayed({
             pb.visibility = View.GONE
-        }, 5000)
+        }, 4000)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -128,6 +126,10 @@ class MainActivity : AppCompatActivity(), PageLoader {
             ConstantURL.facebook -> {
                 val packageName = "com.facebook.katana"
                 openOtherApp(packageName, "fb://facewebmodal/f?href=$url")
+            }
+            ConstantURL.insidePage -> {
+                pb.visibility = View.VISIBLE
+                showProgressBar()
             }
         }
     }

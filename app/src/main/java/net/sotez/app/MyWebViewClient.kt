@@ -16,7 +16,10 @@ class MyWebViewClient(val pageLoader: PageLoader? = null) : WebViewClient() {
             "https://facebook.com/sotezBD" -> {
                 pageLoader?.pageLoaded(ConstantURL.facebook, url)
             }
-            else -> view.loadUrl(url)
+            else -> {
+                view.loadUrl(url)
+                pageLoader?.pageLoaded(ConstantURL.insidePage, url)
+            }
         }
         return true
     }
@@ -35,5 +38,5 @@ interface PageLoader {
 }
 
 enum class ConstantURL {
-    youtube, twitter, facebook, whatsapp
+    youtube, twitter, facebook, whatsapp, insidePage
 }
