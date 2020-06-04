@@ -7,17 +7,16 @@ import android.os.Bundle
 import android.os.Handler
 import android.view.KeyEvent
 import android.view.View
-import android.webkit.DownloadListener
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.android.synthetic.main.activity_main.*
+import java.lang.Exception
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), PageLoader {
     val REQUEST_SELECT_FILE = 100
     var uploadMessage: ValueCallback<Array<Uri>>? = null
 
@@ -32,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
             webview.settings.javaScriptEnabled = true
 
-            webview.webViewClient = MyWebViewClient()
+            webview.webViewClient = MyWebViewClient(this)
 
             webview.webChromeClient = MyWebChromeClient()
 
@@ -47,7 +46,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             showProgressBar()
-
 
 
         } else {
@@ -81,7 +79,12 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == REQUEST_SELECT_FILE) {
             if (uploadMessage == null) return;
-            uploadMessage?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+            uploadMessage?.onReceiveValue(
+                WebChromeClient.FileChooserParams.parseResult(
+                    resultCode,
+                    data
+                )
+            );
             uploadMessage = null;
         }
 
@@ -106,11 +109,39 @@ class MainActivity : AppCompatActivity() {
                 startActivityForResult(intent, REQUEST_SELECT_FILE)
             } catch (e: ActivityNotFoundException) {
                 uploadMessage = null
-                Toast.makeText(this@MainActivity, "Cannot open file chooser", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@MainActivity, "Cannot open file chooser", Toast.LENGTH_LONG)
+                    .show()
                 return false
             }
             return true
         }
+    }
+
+    override fun pageLoaded(constantURL: ConstantURL, url: String) {
+        when (constantURL) {
+            ConstantURL.whatsapp -> {
+                val packageName = "com.whatsapp"
+                openOtherApp(packageName, url)
+            }
+            ConstantURL.youtube -> TODO()
+            ConstantURL.twitter -> TODO()
+            ConstantURL.facebook -> {
+                val packageName = "com.facebook.katana"
+                openOtherApp(packageName, "fb://facewebmodal/f?href=$url")
+            }
+        }
+    }
+
+    private fun openOtherApp(packageName: String, url: String) {
+        try {
+            val i = Intent(Intent.ACTION_VIEW)
+            i.setPackage(packageName)
+            i.data = Uri.parse(url)
+            startActivity(i)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
     }
 }
 
