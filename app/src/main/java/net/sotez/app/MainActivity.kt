@@ -24,39 +24,62 @@ class MainActivity : AppCompatActivity(), PageLoader {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
         if (Util.isNetConnected(this)) {
-
-            webview.loadUrl("https://www.sotez.net")
-
-            webview.settings.javaScriptEnabled = true
-
-            webview.webViewClient = MyWebViewClient(this)
-
-            webview.webChromeClient = MyWebChromeClient()
-
-            webview.setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
-                val i = Intent(Intent.ACTION_VIEW)
-                i.data = Uri.parse(url)
-                startActivity(i)
-            }
-
-            floating.setOnClickListener {
-                startActivity(Intent(this, NotificationActivity::class.java))
-            }
-
-            showProgressBar()
-
-
+            initWeb()
         } else {
-            tvInternetMsg.visibility = View.VISIBLE
-            webview.visibility = View.GONE
-            floating.visibility = View.GONE
-            pb.visibility = View.GONE
+            noInternetConnectionMessage()
+        }
+    }
+
+    private fun initWeb() {
+        webview.loadUrl("https://www.sotez.net")
+
+        webview.settings.javaScriptEnabled = true
+
+        webview.webViewClient = MyWebViewClient(this)
+
+        webview.webChromeClient = MyWebChromeClient()
+
+        webview.setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
+            val i = Intent(Intent.ACTION_VIEW)
+            i.data = Uri.parse(url)
+            startActivity(i)
+        }
+
+        floating.setOnClickListener {
+            startActivity(Intent(this, NotificationActivity::class.java))
+        }
+
+        showProgressBar()
+    }
+
+    private fun noInternetConnectionMessage() {
+        tvInternetMsg.visibility = View.VISIBLE
+        floating.visibility = View.GONE
+        webview.visibility = View.GONE
+        pb.visibility = View.GONE
+
+        btnReload.visibility = View.VISIBLE
+
+        btnReload.setOnClickListener {
+            if (Util.isNetConnected(this)) {
+                tvInternetMsg.visibility = View.GONE
+                floating.visibility = View.VISIBLE
+                webview.visibility = View.VISIBLE
+                initWeb()
+
+                btnReload.visibility = View.GONE
+            } else {
+                Toast.makeText(
+                    this, "Turn on your internet connection",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
     private fun showProgressBar() {
+        pb.visibility = View.VISIBLE
         Handler().postDelayed({
             pb.visibility = View.GONE
         }, 4000)
@@ -89,7 +112,7 @@ class MainActivity : AppCompatActivity(), PageLoader {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    inner class MyWebChromeClient : WebChromeClient() {
+     inner class MyWebChromeClient : WebChromeClient() {
 
         override fun onShowFileChooser(
             webView: WebView,
@@ -116,22 +139,24 @@ class MainActivity : AppCompatActivity(), PageLoader {
     }
 
     override fun pageLoaded(constantURL: ConstantURL, url: String) {
-        when (constantURL) {
-            ConstantURL.whatsapp -> {
-                val packageName = "com.whatsapp"
-                openOtherApp(packageName, url)
+        if (Util.isNetConnected(this))
+
+            when (constantURL) {
+                ConstantURL.whatsapp -> {
+                    val packageName = "com.whatsapp"
+                    openOtherApp(packageName, url)
+                }
+                ConstantURL.youtube -> TODO()
+                ConstantURL.twitter -> TODO()
+                ConstantURL.facebook -> {
+                    val packageName = "com.facebook.katana"
+                    openOtherApp(packageName, "fb://facewebmodal/f?href=$url")
+                }
+                ConstantURL.insidePage -> {
+                    showProgressBar()
+                }
             }
-            ConstantURL.youtube -> TODO()
-            ConstantURL.twitter -> TODO()
-            ConstantURL.facebook -> {
-                val packageName = "com.facebook.katana"
-                openOtherApp(packageName, "fb://facewebmodal/f?href=$url")
-            }
-            ConstantURL.insidePage -> {
-                pb.visibility = View.VISIBLE
-                showProgressBar()
-            }
-        }
+        else noInternetConnectionMessage()
     }
 
     private fun openOtherApp(packageName: String, url: String) {

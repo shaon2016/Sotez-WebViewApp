@@ -25,19 +25,30 @@
         android:id="@+id/pb"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"
-        android:layout_margin="24dp"
-        android:layout_alignParentBottom="true"/>
+        android:layout_margin="24dp" />
 
     <TextView
         android:id="@+id/tvInternetMsg"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:gravity="center"
+        android:padding="16dp"
         android:text="Please turn on your internet"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnReload"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvInternetMsg"
+        android:layout_centerInParent="true"
+        android:text="@string/reload"
         android:visibility="gone" />
 </RelativeLayout>
